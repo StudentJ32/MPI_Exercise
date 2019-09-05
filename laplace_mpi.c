@@ -11,12 +11,12 @@
 #define MAX_TEMP_ERROR  0.01
 
 
-double Temperature[my_ROWS+2][my_COLS+2]
-double Temperature_last[my_ROWS+2][my_COLS+2]
+double Temperature[my_ROWS+2][my_COLS+2];
+double Temperature_last[my_ROWS+2][my_COLS+2];
 
 void initialize(int my_PE_num); //INITIALIZE BOUNDARY CONDTION
 
-int main(int argc, char const *argv[])
+int main(int argc, char **argv)
 {
 
 	int max_iteration = 10000000;
@@ -33,7 +33,7 @@ int main(int argc, char const *argv[])
 	initialize(my_PE_num);
 
 
-	while(dt > MAX_TEMP_ERROR; iteration <= max_iteration){
+	while(dt > MAX_TEMP_ERROR && iteration <= max_iteration){
 		for (int i = 1; i < my_ROWS; ++i)
 		{
 			for (int j = 1; i < my_COLS; ++j)
@@ -58,26 +58,26 @@ int main(int argc, char const *argv[])
 		MPI_Barrier(MPI_COMM_WORLD);
 
 		// update global error
-		MPI_Allreduce(&my_dt, &dt, 1, MPI_FLOAT, MPI_MAX, MPI_COMM_WORLD);
+		MPI_Allreduce(&my_dt, &dt, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
 
 		// update local top
 		if(my_PE_num < 3){
-			MPI_Send(&Temperature[my_ROWS][0], my_COLS+2, my_PE_num+1, 10, MPI_COMM_WORLD); // sending bottom padding row
+			MPI_Send(&Temperature[my_ROWS][0], my_COLS+2, MPI_DOUBLE, my_PE_num+1, 10, MPI_COMM_WORLD); // sending bottom padding row
 
 		}
 
 		if(my_PE_num > 0){
-			MPI_Receive(&Temperature_last[0][0],my_COLS+2, my_PE_num-1,10, MPI_COMM_WORLD, &status);
+			MPI_Recv(&Temperature_last[0][0],my_COLS+2, MPI_DOUBLE, my_PE_num-1,10, MPI_COMM_WORLD, &status);
 		}
 
 		//update local bottom
 		if (my_PE_num > 0){
-			MPI_Send(&Temperature[1][0], my_COLS+2, my_PE_num-1,5, MPI_COMM_WORLD);// send top padding row
+			MPI_Send(&Temperature[1][0], my_COLS+2, MPI_DOUBLE, my_PE_num-1,5, MPI_COMM_WORLD);// send top padding row
 		}
 
 		if(my_PE_num < 3){
-			MPI_Receive(&Temperature_last[my_ROWS+1][0], my_COLS+2, my_PE_num+1, 5, MPI_COMM_WORLD, &status);
+			MPI_Recv(&Temperature_last[my_ROWS+1][0], my_COLS+2, MPI_DOUBLE, my_PE_num+1, 5, MPI_COMM_WORLD, &status);
 		}
 
 		// barrier for padding row update;
@@ -95,7 +95,7 @@ int main(int argc, char const *argv[])
 
 void initialize(int my_PE_num){
 
-	for (int i = 0; i < = my_ROWS+1; i++){
+	for (int i = 0; i <= my_ROWS+1; i++){
 		for (int j = 0; j < my_COLS; j++){
 			Temperature_last[i][j] = 0.0;
 		}
