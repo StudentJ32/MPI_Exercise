@@ -4,11 +4,11 @@
 #include "mpi.h"
 
 // size of local matrix
-#define my_COLS = 1000
-#define my_ROWS = 250
+#define my_COLS  1000
+#define my_ROWS  250
 
 // define numerical error bound
-#define MAX_TEMP_ERROR 0.01
+#define MAX_TEMP_ERROR  0.01
 
 
 double Temperature[my_ROWS+2][my_COLS+2]
